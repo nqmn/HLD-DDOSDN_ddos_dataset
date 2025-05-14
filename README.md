@@ -63,12 +63,8 @@ Meanwhile, label 1 (normal traffic) contains a realistic mix of protocols:
 - TCP: 808,918 samples
 - UDP: 606,896 samples
 
-This discrepancy indicates a serious labeling or extraction issue in the dataset, where attack traffic does not represent protocol diversity, thereby undermining its suitability for training robust, real-world DDoS detection models.
 
-All traffic for label 0 (DDoS traffic) uses **Protocol 6 (TCP)**, which contradicts the expected protocol types:
-- **ICMP DDoS** → Protocol `0`
-- **TCP DDoS** → Protocol `6`
-- **UDP DDoS** → Protocol `17`
+This discrepancy indicates a serious labeling or extraction issue in the dataset, where attack traffic does not represent protocol diversity, thereby undermining its suitability for training robust, real-world DDoS detection models.
 
 This contradicts the definitions stated in the associated article.
 
@@ -117,21 +113,9 @@ The author mentioned:
 
 > "In the multiclass experiment, every class is given a unique value. For example, 0, 1, 2, and 3 represent SDN normal traffic, ICMP, TCP, and UDP DDoS flooding attacks, respectively." -Article
 
-The ICMP DDoS dataset (H-ICMP_...) assigns label 0 (DDoS) to TCP traffic and label 1 (Normal) to ICMP traffic, which presents an illogical protocol-label mapping. Similarly, the UDP DDoS dataset (H-UDP_...) maps label 0 (DDoS) to TCP and label 1 (Normal) to UDP, indicating a clear protocol mismatch with the intended attack type. In contrast, the TCP DDoS dataset (H-TCP_...) maintains consistent labeling and protocol alignment, but it lacks protocol diversity, limiting its applicability for generalized DDoS detection.
+In both High-Rate and Low-Rate “All Attacks” datasets, the authors define four classes—Normal, ICMP DDoS, TCP DDoS, and UDP DDoS, each with 250 000 samples. Critically, each attack class should carry its own protocol (ICMP→1, TCP→6, UDP→17) in the Protocol field. But, none of the ICMP or UDP attack samples in either H-All or L-All carry the correct protocol, even though the paper’s Table 7 says they should.
 
 
-- **ICMP DDoS Dataset (`H-ICMP_...`)**:  
-  - Label `0` (DDoS) → TCP  
-  - Label `1` (Normal) → ICMP  
-  **⚠ Illogical protocol-label mapping**
-
-- **UDP DDoS Dataset (`H-UDP_...`)**:  
-  - Label `0` (DDoS) → TCP  
-  - Label `1` (Normal) → UDP  
-  **⚠ Protocol mismatch with the attack type**
-
-- **TCP DDoS Dataset (`H-TCP_...`)**:  
-  Consistent labeling and protocol use, but **lacks protocol diversity**.
 
 
 This is fundamentally flawed because:
