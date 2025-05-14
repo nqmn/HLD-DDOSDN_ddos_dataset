@@ -1,25 +1,33 @@
-# HLD-DDoSDN Dataset Analysis and Preprocessing
+# HLD-DDoSDN Dataset Analysis & Preprocessing
+
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)]()
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)]()
 
 ## Overview
 
 This repository analyzes and highlights major inconsistencies within the **HLD-DDoSDN** dataset, which is designed for DDoS attack detection using machine learning. It includes both **binary** and **multiclass classification** versions.
 
-#### References
+## Getting Started
 
-* Original article: Bahashwan AA, Anbar M, Manickam S, Issa G, Aladaileh MA, et al. (2024) HLD-DDoSDN: High and low-rates dataset-based DDoS attacks against SDN. PLOS ONE 19(2): e0297548. https://doi.org/10.1371/journal.pone.0297548 
-
-#### Dataset availability
-The HLD-DDoSDN dataset can be accessed on
-
-```
-https://sites.google.com/view/hld-ddosdn-datasets/home
+```bash
+git clone https://github.com/nqmn/HLD-DDOSDN_ddos_dataset.git
+cd HLD-DDOSDN_ddos_dataset
+pip install -r requirements.txt
+jupyter lab
 ```
 
-#### Jupyter notebook file:
+#### Datasets & Paper
+
+- Dataset availability
+The HLD-DDoSDN dataset can be accessed on https://sites.google.com/view/hld-ddosdn-datasets/home
+- Article: Bahashwan AA, Anbar M, Manickam S, Issa G, Aladaileh MA, et al. (2024) HLD-DDoSDN: High and low-rates dataset-based DDoS attacks against SDN. PLOS ONE 19(2): e0297548. https://doi.org/10.1371/journal.pone.0297548 
+
+#### Jupyter Notebook Files
 You can access the jupyter notebook file located in this repository or copy the URL provided below.
 
 ```
 https://github.com/nqmn/hld-ddosdn_ddos_dataset/blob/main/hldddosdn_preparationv2.ipynb
+https://github.com/nqmn/HLD-DDOSDN_ddos_dataset/blob/main/hldddosdn_stats.ipynb
 ```
 
 ## Identified Issues
@@ -30,8 +38,7 @@ Load both files for binary dataset:
 
 ```python
 # Read multiple CSV files from folder
-df = pd.concat(map(pd.read_csv, glob.glob(path + "/*.csv"))) #output: (2413314, 72)
-print("Dataset loaded...")
+df = pd.concat(map(pd.read_csv, glob.glob(path + "/*.csv")))
 ```
 
 Check protocol distribution per label:
@@ -48,6 +55,13 @@ df.groupby("Label")["Protocol"].value_counts().unstack(fill_value=0)
 
 ```
 TL;DR: All DDoS protocol types in this case are TCP-based.
+
+Expected: In each file, attack samples use the file’s protocol (ICMP→1, UDP→17, TCP→6).
+
+Observed:
+- ICMP files → Attack = TCP (6), Normal = ICMP (0)
+- UDP files → Attack = TCP (6), Normal = UDP (17)
+- TCP files → Attack & Normal = TCP (6) only
 ```
 The author mentioned:
 
@@ -86,8 +100,7 @@ Load all files for multiclass dataset:
 
 ```
 # Read multiple CSV files from folder
-df = pd.concat(map(pd.read_csv, glob.glob(path + "/*.csv"))) #output: (2413314, 72)
-print("Dataset loaded...")
+df = pd.concat(map(pd.read_csv, glob.glob(path + "/*.csv")))
 ```
 
 Check protocol distribution per label:
@@ -104,7 +117,10 @@ df.groupby("Label")["Protocol"].value_counts().unstack(fill_value=0)
 ### Analysis
 
 ```
-TL;DR: Protocol mismatch with the attack type
+TL;DR: Protocol mismatch with the attack type.
+
+Expected: Four classes (0=Normal, 1=ICMP, 2=TCP, 3=UDP), each with matching protocol fields.
+Observed: Only Normal (0) shows mixed protocols; all attack labels (1–3) carry TCP (6).
 ```
 
 The multiclass datasets contains 2,000,000 samples with 72 features, including the label.
@@ -186,11 +202,14 @@ new_df.to_csv('../ds/hldddosdn_hlddos_combined_binary_cleaned_0d1n.csv', index=F
 
 ## Conclusion
 
-The **HLD-DDoSDN** dataset presents significant labeling and protocol inconsistencies. Caution is advised when using it for training machine learning models. Carefully validating class-label mappings and traffic characteristics is essential before drawing conclusions from models trained on this dataset.
+The **HLD-DDoSDN** dataset presents significant labeling and protocol inconsistencies. Caution is advised when using it for training machine learning models. **Carefully validating** class-label mappings and traffic characteristics is essential before drawing conclusions from models trained on this dataset.
 
 ---
+### This is another part of analysis.
 
 # ML Classifications:
+
+The output of analysis:
 
 ```
 Dataset: ../ds/hldddosdn_hlddos_combined_binary_cleaned_0d1n.csv
@@ -308,8 +327,6 @@ The results show a **near-perfect classification performance** across all evalua
 
 Let's break this down:
 
----
-
 ## Summary of Observations
 
 ### 1. **Dataset Size & Features**
@@ -356,12 +373,12 @@ Let's break this down:
 
 #### Evaluation Time:
 
-| Method        | Train Time (s) | Test Time (s) |
-| ------------- | -------------- | ------------- |
-| Full Features | 95.7           | 2.0           |
-| VT            | 40.6           | 1.4           |
-| DFA (4 feat)  | 40.5           | 1.2           |
-| DFA Agg. (1)  | 42.5           | 1.6           |
+| Method        | Feature | Train Time (s) | Test Time (s) |
+| ------------- | ------- | -------------- | ------------- |
+| Full Features |    55   | 95.7           | 2.0           |
+| VT            |    6    | 40.6           | 1.4           |
+| DFA Sel.      |    4    | 40.5           | 1.2           |
+| DFA Agg.      |    1    | 42.5           | 1.6           |
 
 ---
 
