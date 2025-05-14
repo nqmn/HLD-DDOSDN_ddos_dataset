@@ -2,26 +2,36 @@
 
 ## Overview
 
-This repository analyzes and highlights major inconsistencies within the **HLD-DDoSDN** dataset, which is designed for DDoS attack detection using machine learning. It includes both **multiclass** and **binary classification** versions.
+This repository analyzes and highlights major inconsistencies within the **HLD-DDoSDN** dataset, which is designed for DDoS attack detection using machine learning. It includes both **binary** and **multiclass classification** versions.
+
+#### References
+
+* Original article: Bahashwan AA, Anbar M, Manickam S, Issa G, Aladaileh MA, et al. (2024) HLD-DDoSDN: High and low-rates dataset-based DDoS attacks against SDN. PLOS ONE 19(2): e0297548. https://doi.org/10.1371/journal.pone.0297548 
+
+#### Dataset availability
+The HLD-DDoSDN can be accessed on
+
+```
+https://sites.google.com/view/hld-ddosdn-datasets/home
+```
+
+#### Jupyter notebook file:
+You can access the jupyter notebook file located in this repository or copy the URL provided below.
+
+```
+https://github.com/nqmn/hld-ddosdn_ddos_dataset/blob/main/hldddosdn_preparationv2.ipynb
+```
 
 ## Identified Issues
 
-```
-Jupyter notebook file: https://github.com/nqmn/hld-ddosdn_ddos_dataset/blob/main/hldddosdn_preparationv2.ipynb
-```
+### 1. Binary Dataset Inconsistencies
 
-### Multiclass Dataset Inconsistencies
-
-Read both files:
+Load both files for binary dataset:
 
 ```python
-# Read single multiclass CSV file
-
-#df = pd.read_csv(path + "/H-All_DDoS_Flooding_Attack_balanced_data.csv")
-#output: (1000000, 72) #multiclass (4): Label 0 - 250000, 1 - 250000, 2 - 250000, 3 - 250000
-
-# df = pd.read_csv(path + "/L-All_DDoS_Flooding_Attack_balanced_data.csv")
-#output: (1000000, 72) #multiclass (4): Label 0 - 250000, 1 - 250000, 2 - 250000, 3 - 250000
+# Read multiple CSV files from folder
+df = pd.concat(map(pd.read_csv, glob.glob(path + "/*.csv"))) #output: (2413314, 72)
+print("Dataset loaded...")
 ```
 
 Check protocol distribution per label:
@@ -37,25 +47,25 @@ df.groupby("Label")["Protocol"].value_counts().unstack(fill_value=0)
 ### Analysis:
 
 ```
-TLDR; All DDoS protocol type is TCP.
+TL;DR: All DDoS protocol types in this case are TCP-based.
 ```
+The author mentioned:
 
-```
-# Label 0 (representing DDoS traffic) contains 2,475,040 samples,
-# all of which are TCP-based (Protocol 6), regardless of the DDoS type.
-# This is inconsistent with the intended dataset design, which should include ICMP and UDP DDoS traffic.
-#
-# Meanwhile, label 1 (benign traffic) contains a realistic mix of protocols:
-# - ICMP: 1,059,226 samples
-# - TCP: 808,918 samples
-# - UDP: 606,896 samples
-#
-# This discrepancy indicates a serious labeling or extraction issue in the dataset, where
-# attack traffic does not represent protocol diversity, thereby undermining its suitability
-# for training robust, real-world DDoS detection models.
-```
+> "This study includes both binary and multiclass classifications. In a binary experiment, the normal class is assigned a value of 1, and the malicious traffic is assigned a value of 0." -Article
 
-All traffic uses **Protocol 6 (TCP)**, which contradicts the expected protocol types:
+The binary dataset are divided into two files (one for H-DDoS and another for L-DDoS), which contains 4,950,080 samples and 72 features including the label.
+
+Label 0 (representing DDoS traffic) contains 2,475,040 samples, all of which are TCP-based (Protocol 6) regardless of the DDoS type.
+This is inconsistent with the intended dataset design, which should include ICMP and UDP DDoS traffic.
+
+Meanwhile, label 1 (normal traffic) contains a realistic mix of protocols:
+- ICMP: 1,059,226 samples
+- TCP: 808,918 samples
+- UDP: 606,896 samples
+
+This discrepancy indicates a serious labeling or extraction issue in the dataset, where attack traffic does not represent protocol diversity, thereby undermining its suitability for training robust, real-world DDoS detection models.
+
+All traffic for label 0 (DDoS traffic) uses **Protocol 6 (TCP)**, which contradicts the expected protocol types:
 - **ICMP DDoS** → Protocol `0`
 - **TCP DDoS** → Protocol `6`
 - **UDP DDoS** → Protocol `17`
@@ -64,29 +74,40 @@ This contradicts the definitions stated in the associated article.
 
 ---
 
-### Binary Classification Inconsistencies
+### 2. Multiclass Classification Inconsistencies
 
-Read all files:
+Load all files for multiclass dataset:
 
 ```
-# Read single binary classification CSV file
-
-# df = pd.read_csv(path + "/H-ICMP_DDoS_Flooding_Attack_balanced_data.csv")
-# output: (1000000, 72) #binary (2): Label 0 (DDoS) - TCP 529613, Label 1  (Normal) - ICMP 529613
-
-# df = pd.read_csv(path + "/H-TCP_DDoS_Flooding_Attack_balanced_data.csv")
-# output: (747192, 72) #binary (2): Label 0 (DDoS) - TCP 373596, Label 1  (Normal) - TCP 373596
-
-# df = pd.read_csv(path + "/H-UDP_DDoS_Flooding_Attack_balanced_data.csv")
-# output: (606896, 72) #binary (2): Label 0 (DDoS) - TCP 303448, Label 1  (Normal) - UDP 303448
-
 # Read multiple CSV files from folder
 df = pd.concat(map(pd.read_csv, glob.glob(path + "/*.csv"))) #output: (2413314, 72)
 print("Dataset loaded...")
 ```
+
+Check protocol distribution per label:
+
+```python
+df.groupby("Label")["Protocol"].value_counts().unstack(fill_value=0)
+```
+
 **Output:**
 
 ![image](https://github.com/user-attachments/assets/69b0f9a0-d92f-4567-a89e-108b4ba095d1)
+
+
+### Analysis
+
+```
+TL;DR: Protocol mismatch with the attack type
+```
+
+The multiclass datasets contains 2,000,000 samples with 72 features, including the label.
+
+The author mentioned:
+
+> "In the multiclass experiment, every class is given a unique value. For example, 0, 1, 2, and 3 represent SDN normal traffic, ICMP, TCP, and UDP DDoS flooding attacks, respectively." -Article
+
+The ICMP DDoS dataset (H-ICMP_...) assigns label 0 (DDoS) to TCP traffic and label 1 (Normal) to ICMP traffic, which presents an illogical protocol-label mapping. Similarly, the UDP DDoS dataset (H-UDP_...) maps label 0 (DDoS) to TCP and label 1 (Normal) to UDP, indicating a clear protocol mismatch with the intended attack type. In contrast, the TCP DDoS dataset (H-TCP_...) maintains consistent labeling and protocol alignment, but it lacks protocol diversity, limiting its applicability for generalized DDoS detection.
 
 
 - **ICMP DDoS Dataset (`H-ICMP_...`)**:  
@@ -106,21 +127,6 @@ print("Dataset loaded...")
 
 
 These inconsistencies may severely impact model training and generalization.
-
----
-
-### Observation:
-
-* **Label 0 (DDoS)**: 2,475,040 samples — *all* Protocol `6` (TCP)
-* **Label 1 (Normal)**: Includes mix of:
-
-  * ICMP: 1,059,226
-  * TCP: 808,918
-  * UDP: 606,896
-
-> ⚠ Attack traffic lacks protocol diversity, reducing real-world applicability.
-
----
 
 ## Data Summary
 
@@ -177,11 +183,6 @@ new_df.to_csv('../ds/hldddosdn_hlddos_combined_binary_cleaned_0d1n.csv', index=F
 The **HLD-DDoSDN** dataset presents significant labeling and protocol inconsistencies. Caution is advised when using it for training machine learning models. Carefully validating class-label mappings and traffic characteristics is essential before drawing conclusions from models trained on this dataset.
 
 ---
-
-## References
-
-* Original article: Bahashwan AA, Anbar M, Manickam S, Issa G, Aladaileh MA, et al. (2024) HLD-DDoSDN: High and low-rates dataset-based DDoS attacks against SDN. PLOS ONE 19(2): e0297548. https://doi.org/10.1371/journal.pone.0297548 
-
 
 # Output for Random Forest classifications:
 
