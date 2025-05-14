@@ -5,7 +5,7 @@
 
 ## Overview
 
-This repository analyzes and highlights major inconsistencies within the **HLD-DDoSDN** dataset, which is designed for DDoS attack detection using machine learning. It includes both **binary** and **multiclass classification** versions.
+This repository analyzes and presents solutions based on the HLD-DDoSDN dataset, which is designed for DDoS attack detection using machine learning. It includes both binary and multiclass classification approaches.
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ https://github.com/nqmn/HLD-DDOSDN_ddos_dataset/blob/main/hldddosdn_stats.ipynb
 
 ## Identified Issues
 
-### 1. Binary Dataset Inconsistencies
+### 1. Binary Dataset
 
 Load both files for binary dataset:
 
@@ -54,14 +54,7 @@ df.groupby("Label")["Protocol"].value_counts().unstack(fill_value=0)
 ### Analysis:
 
 ```
-TL;DR: All DDoS protocol types in this case are TCP-based.
-
-Expected: In each file, attack samples use the file’s protocol (ICMP→1, UDP→17, TCP→6).
-
-Observed:
-- ICMP files → Attack = TCP (6), Normal = ICMP (0)
-- UDP files → Attack = TCP (6), Normal = UDP (17)
-- TCP files → Attack & Normal = TCP (6) only
+TL;DR: Recommend to exclude Protocol feature from model training.
 ```
 The author mentioned:
 
@@ -69,32 +62,16 @@ The author mentioned:
 
 The binary dataset are divided into two files (one for H-DDoS and another for L-DDoS), which contains 4,950,080 samples and 72 features including the label.
 
-Label 0 (representing DDoS traffic) contains 2,475,040 samples, all of which are TCP-based (Protocol 6) regardless of the DDoS type.
-This is inconsistent with the intended dataset design, which should include ICMP and UDP DDoS traffic.
-
+Label 0 (representing DDoS traffic) contains 2,475,040 samples, all of which are recorded as `TCP` (Protocol `6`), regardless of the actual DDoS type (`ICMP`, `TCP`, or `UDP`).
+This is likely due to **OpenFlow** encapsulation, where attack packets are transported over the controller channel using TCP.
 Meanwhile, label 1 (normal traffic) contains a realistic mix of protocols:
 - ICMP: 1,059,226 samples
 - TCP: 808,918 samples
 - UDP: 606,896 samples
 
+As a result, the `Protocol` feature may becomes ineffective for distinguishing between classes.
 
-This discrepancy indicates a serious labeling or extraction issue in the dataset, where attack traffic does not represent protocol diversity, thereby undermining its suitability for training robust, real-world DDoS detection models.
-
-This contradicts the definitions stated in the associated article.
-
-This is a critical issue because:
-- The dataset fails to represent the full spectrum of DDoS attack types as intended
-- ICMP floods and UDP floods are common DDoS attack vectors that should be included
-- The lack of protocol diversity in attack samples undermines the dataset's usefulness for training robust DDoS detection models
-
-This appears to be a data quality issue where either:
-- The labeling process incorrectly classified all DDoS attacks as TCP
-- The data extraction process filtered out non-TCP DDoS attacks
-- There was an error in the dataset creation methodology
-
----
-
-### 2. Multiclass Classification Inconsistencies
+### 2. Multiclass Classification
 
 Load all files for multiclass dataset:
 
@@ -118,9 +95,6 @@ df.groupby("Label")["Protocol"].value_counts().unstack(fill_value=0)
 
 ```
 TL;DR: Protocol mismatch with the attack type.
-
-Expected: Four classes (0=Normal, 1=ICMP, 2=TCP, 3=UDP), each with matching protocol fields.
-Observed: Only Normal (0) shows mixed protocols; all attack labels (1–3) carry TCP (6).
 ```
 
 The multiclass datasets contains 2,000,000 samples with 72 features, including the label.
@@ -129,26 +103,9 @@ The author mentioned:
 
 > "In the multiclass experiment, every class is given a unique value. For example, 0, 1, 2, and 3 represent SDN normal traffic, ICMP, TCP, and UDP DDoS flooding attacks, respectively." -Article
 
-In both High-Rate and Low-Rate “All Attacks” datasets, the authors define four classes—Normal, ICMP DDoS, TCP DDoS, and UDP DDoS, each with 250 000 samples. Critically, each attack class should carry its own protocol (ICMP→1, TCP→6, UDP→17) in the Protocol field. But, none of the ICMP or UDP attack samples in either H-All or L-All carry the correct protocol, even though the paper’s Table 7 says they should.
+In both High-Rate and Low-Rate “All Attacks” datasets, the authors define four classes—Normal, ICMP DDoS, TCP DDoS, and UDP DDoS, each with 250 000 samples. Critically, each attack class should carry its own protocol (ICMP→1, TCP→6, UDP→17) in the Protocol field. This is also likely due to **OpenFlow** encapsulation, where attack packets are transported over the controller channel using TCP.
 
-
-
-
-This is fundamentally flawed because:
-
-- ICMP DDoS attacks should use ICMP protocol, not TCP
-- UDP DDoS attacks should use UDP protocol, not TCP
-- The normal traffic is using the protocol that should be associated with the attack type
-
-Critical implications:
-
-- Models trained on this data would learn incorrect attack signatures.
-- The dataset contradicts basic networking principles where:
-  - ICMP floods use ICMP protocol (Protocol 1)
-  - UDP floods use UDP protocol (Protocol 17)
-  - TCP floods use TCP protocol (Protocol 6)
-
-These inconsistencies may severely impact model training and generalization.
+As a result, the `Protocol` feature may becomes ineffective for distinguishing between classes.
 
 ## Data Summary
 
@@ -202,7 +159,9 @@ new_df.to_csv('../ds/hldddosdn_hlddos_combined_binary_cleaned_0d1n.csv', index=F
 
 ## Conclusion
 
-The **HLD-DDoSDN** dataset presents significant labeling and protocol inconsistencies. Caution is advised when using it for training machine learning models. **Carefully validating** class-label mappings and traffic characteristics is essential before drawing conclusions from models trained on this dataset.
+The HLD-DDoSDN dataset contains significant inconsistencies, so caution is advised when using it for training machine learning models.
+The `Protocol` feature is recommended to be excluded from model training across all dataset variants.
+If not removed, there is a risk of data leakage, as all non-zero labels use Protocol `6`, which could inadvertently reveal label information during training.
 
 ---
 ### This is another part of analysis.
