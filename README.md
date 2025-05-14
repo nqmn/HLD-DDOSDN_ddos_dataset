@@ -226,97 +226,102 @@ Scaler used: MinMaxScaler()
 ✅ Running Conventional VarianceThreshold (VT)...
 Selected features (VT): 6
 Selected feature names (VT): ['Bwd IAT Min', 'Bwd PSH Flags', 'Pkt Len Std', 'Pkt Len Var', 'FIN Flag Cnt', 'Subflow Fwd Pkts']
-VT completed in 4.1901 seconds
+VT completed in 4.0957 seconds
 
 ✅ Running Dynamic Feature Analysis (DFA)...
-Feature analysis completed in 11.7023 seconds
-
-Total features involved: 55
-Selected features: 4
-Selected feature indices: [28, 30, 38, 49]
+DFA completed in 3.0301 seconds
+Selected features: 4 | Indices: [28, 30, 38, 49]
 Selected feature names (DFA): ['Bwd IAT Min', 'Bwd PSH Flags', 'Pkt Len Std', 'Subflow Fwd Pkts']
 
-✅ Training classifier on full features...
-✅ Training classifier on VT features...
-✅ Training classifier on selected features...
-✅ Training classifier on aggregated feature...
 
-Model: RandomForestClassifier(n_jobs=-1)
+✅ Training classifier on full features with 5-Fold CV...
+✅ Training classifier on VT features with 5-Fold CV...
+✅ Training classifier on selected features with 5-Fold CV...
+✅ Training classifier on aggregated features with 5-Fold CV...
 
-Result Summary:
-===========================================================================
+Model: DecisionTreeClassifier(random_state=42)
+
+Result Summary (5-Fold CV Average):
+===============================================================================================
 Method         Feature   Accuracy  ROC-AUC   MSE       R2        Train Time (s) Test Time (s)  
-===========================================================================
-Full Features  55        1.000000  1.000000  0.000000  1.000000  95.732413      2.042903       
-VT             6         1.000000  1.000000  0.000000  1.000000  40.571136      1.435399       
-DFA Sel        4         1.000000  1.000000  0.000000  1.000000  40.507255      1.247946       
-DFA Agg        1         1.000000  1.000000  0.000000  1.000000  42.490553      1.639931       
-===========================================================================
-Evaluation Result for: Full Feature
+===============================================================================================
+Full Features  55        1.000000  1.000000  0.000000  1.000000  19.245008      0.253589       
+VT             6         1.000000  1.000000  0.000000  1.000000  1.128329       0.077748       
+DFA Sel        4         1.000000  1.000000  0.000000  1.000000  0.959719       0.062975       
+DFA Agg        1         1.000000  1.000000  0.000000  1.000000  0.757206       0.060614       
+===============================================================================================
+Evaluation Result for: Full Features
 
-Classification Report (Full Feature):
+Classification Report:
               precision    recall  f1-score   support
 
-           0   1.000000  1.000000  1.000000    495008
-           1   1.000000  1.000000  1.000000    495008
+           0   1.000000  1.000000  1.000000   2475040
+           1   1.000000  1.000000  1.000000   2475040
 
-    accuracy                       1.000000    990016
-   macro avg   1.000000  1.000000  1.000000    990016
-weighted avg   1.000000  1.000000  1.000000    990016
+    accuracy                       1.000000   4950080
+   macro avg   1.000000  1.000000  1.000000   4950080
+weighted avg   1.000000  1.000000  1.000000   4950080
 
-[[495008      0]
- [     0 495008]]
-======================================================================
+Confusion Matrix:
+[[2475040       0]
+ [      0 2475040]]
+===============================================================================================
+Evaluation Result for: VT
 
-Evaluation Result for: VT Feature
-
-Classification Report (Selected Feature):
+Classification Report:
               precision    recall  f1-score   support
 
-           0   1.000000  1.000000  1.000000    495008
-           1   1.000000  1.000000  1.000000    495008
+           0   1.000000  1.000000  1.000000   2475040
+           1   1.000000  1.000000  1.000000   2475040
 
-    accuracy                       1.000000    990016
-   macro avg   1.000000  1.000000  1.000000    990016
-weighted avg   1.000000  1.000000  1.000000    990016
+    accuracy                       1.000000   4950080
+   macro avg   1.000000  1.000000  1.000000   4950080
+weighted avg   1.000000  1.000000  1.000000   4950080
 
-[[495008      0]
- [     0 495008]]
-======================================================================
-Evaluation Result for: Selected Feature
+Confusion Matrix:
+[[2475040       0]
+ [      0 2475040]]
+===============================================================================================
+Evaluation Result for: DFA Sel
 
-Classification Report (Selected Feature):
+Classification Report:
               precision    recall  f1-score   support
 
-           0   1.000000  1.000000  1.000000    495008
-           1   1.000000  1.000000  1.000000    495008
+           0   1.000000  1.000000  1.000000   2475040
+           1   1.000000  1.000000  1.000000   2475040
 
-    accuracy                       1.000000    990016
-   macro avg   1.000000  1.000000  1.000000    990016
-weighted avg   1.000000  1.000000  1.000000    990016
+    accuracy                       1.000000   4950080
+   macro avg   1.000000  1.000000  1.000000   4950080
+weighted avg   1.000000  1.000000  1.000000   4950080
 
-[[495008      0]
- [     0 495008]]
-======================================================================
-Evaluation Result for: Aggregated Feature
+Confusion Matrix:
+[[2475040       0]
+ [      0 2475040]]
+===============================================================================================
+Evaluation Result for: DFA Agg
 
-Classification Report (Aggregated Feature):
+Classification Report:
               precision    recall  f1-score   support
 
-           0   1.000000  1.000000  1.000000    495008
-           1   1.000000  1.000000  1.000000    495008
+           0   1.000000  1.000000  1.000000   2475040
+           1   1.000000  1.000000  1.000000   2475040
 
-    accuracy                       1.000000    990016
-   macro avg   1.000000  1.000000  1.000000    990016
-weighted avg   1.000000  1.000000  1.000000    990016
+    accuracy                       1.000000   4950080
+   macro avg   1.000000  1.000000  1.000000   4950080
+weighted avg   1.000000  1.000000  1.000000   4950080
 
-[[495008      0]
- [     0 495008]]
+Confusion Matrix:
+[[2475040       0]
+ [      0 2475040]]
+===============================================================================================
 
 ✅ Evaluate Aggregated Feature (X_agg)...
 
+![image](https://github.com/user-attachments/assets/203a3dc3-915e-4779-993f-901e4831ded2)
+
 Average Silhouette Score: 0.6027
-Analysis complete!
+
+🎉 Analysis complete!
 ```
 
 ## Analysis
@@ -353,17 +358,20 @@ Let's break this down:
 
 * Selected **4 features**
   `['Bwd IAT Min', 'Bwd PSH Flags', 'Pkt Len Std', 'Subflow Fwd Pkts']`
+* The new unsupervised dynamic feature selection based on traffic distributions
 * Overlaps with VT, suggesting robustness
 
 #### **DFA Aggregated Feature**:
 
+* Aggregate the selected feature into 1 single feature.
+* The new unsupervised dynamic feature selection with weighted aggregation
 * A composite single feature likely combining most discriminative traits
 
 ---
 
 ### 3. **Model & Performance**
 
-* Model used: `RandomForestClassifier(n_jobs=-1)`
+* Model used: `DecisionTreeClassifier()`
 * **All configurations** (Full, VT, DFA, DFA-Aggregated) yielded:
 
   * Accuracy: **100%**
@@ -375,19 +383,18 @@ Let's break this down:
 
 | Method        | Feature | Train Time (s) | Test Time (s) |
 | ------------- | ------- | -------------- | ------------- |
-| Full Features |    55   | 95.7           | 2.0           |
-| VT            |    6    | 40.6           | 1.4           |
-| DFA Sel.      |    4    | 40.5           | 1.2           |
-| DFA Agg.      |    1    | 42.5           | 1.6           |
+| Full Features |    55   | 19.2           | 0.253         |
+| VT            |    6    | 1.13           | 0.078         |
+| DFA Sel.      |    4    | 0.96           | 0.063         |
+| DFA Agg.      |    1    | 0.76           | 0.061         |
 
 ---
 
 ### 4. **Clustering Insight**
 
-* **Silhouette Score** of **0.6027** for the aggregated feature suggests:
-
 ![image](https://github.com/user-attachments/assets/203a3dc3-915e-4779-993f-901e4831ded2)
 
+* **Silhouette Score** of **0.6027** for the aggregated feature suggests:
   * **Moderate separation** between clusters (i.e., classes)
   * The feature is capturing meaningful signal
 
@@ -407,6 +414,7 @@ Despite these perfect results, there are **red flags** that suggest the model mi
 
    * Perfect metrics across all feature sets are highly suspicious in real-world cybersecurity datasets.
    * This suggests a **data leakage** or spurious correlations.
+   * Features like `Bwd IAT Min` and `Pkt Len Std` indicate that the classifier likely learned the timing patterns associated with different DDoS attack rates (e.g., 0.2s vs 0.03s).
 
 3. **Feature Overperformance**
 
