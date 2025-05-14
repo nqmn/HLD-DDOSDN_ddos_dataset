@@ -9,7 +9,7 @@ This repository analyzes and highlights major inconsistencies within the **HLD-D
 * Original article: Bahashwan AA, Anbar M, Manickam S, Issa G, Aladaileh MA, et al. (2024) HLD-DDoSDN: High and low-rates dataset-based DDoS attacks against SDN. PLOS ONE 19(2): e0297548. https://doi.org/10.1371/journal.pone.0297548 
 
 #### Dataset availability
-The HLD-DDoSDN can be accessed on
+The HLD-DDoSDN dataset can be accessed on
 
 ```
 https://sites.google.com/view/hld-ddosdn-datasets/home
@@ -72,6 +72,16 @@ All traffic for label 0 (DDoS traffic) uses **Protocol 6 (TCP)**, which contradi
 
 This contradicts the definitions stated in the associated article.
 
+This is a critical issue because:
+- The dataset fails to represent the full spectrum of DDoS attack types as intended
+- ICMP floods and UDP floods are common DDoS attack vectors that should be included
+- The lack of protocol diversity in attack samples undermines the dataset's usefulness for training robust DDoS detection models
+
+This appears to be a data quality issue where either:
+- The labeling process incorrectly classified all DDoS attacks as TCP
+- The data extraction process filtered out non-TCP DDoS attacks
+- There was an error in the dataset creation methodology
+
 ---
 
 ### 2. Multiclass Classification Inconsistencies
@@ -124,7 +134,19 @@ The ICMP DDoS dataset (H-ICMP_...) assigns label 0 (DDoS) to TCP traffic and lab
   Consistent labeling and protocol use, but **lacks protocol diversity**.
 
 
+This is fundamentally flawed because:
 
+- ICMP DDoS attacks should use ICMP protocol, not TCP
+- UDP DDoS attacks should use UDP protocol, not TCP
+- The normal traffic is using the protocol that should be associated with the attack type
+
+Critical implications:
+
+- Models trained on this data would learn incorrect attack signatures.
+- The dataset contradicts basic networking principles where:
+  - ICMP floods use ICMP protocol (Protocol 1)
+  - UDP floods use UDP protocol (Protocol 17)
+  - TCP floods use TCP protocol (Protocol 6)
 
 These inconsistencies may severely impact model training and generalization.
 
@@ -184,7 +206,7 @@ The **HLD-DDoSDN** dataset presents significant labeling and protocol inconsiste
 
 ---
 
-# Output for Random Forest classifications:
+# ML Classifications:
 
 ```
 Dataset: ../ds/hldddosdn_hlddos_combined_binary_cleaned_0d1n.csv
@@ -296,16 +318,20 @@ Analysis complete!
 
 ## Analysis
 
-The results show a **near-perfect classification performance** across all evaluation methods, but given earlier dataset inconsistencies, these results are **likely misleading**. Let's break this down:
+The results show a **near-perfect classification performance** across all evaluation methods, but given earlier dataset inconsistencies, these results are **likely misleading**. The findings also suggest the presence of **data leakage** which could stem from the fixed packet sending rates of 0.2 seconds and 0.03 seconds, which corresponding to high-rate and low-rate UDP DDoS flooding attacks, respectively.
+
+> As indicated by [25], the sending packet rate of 0.2 (s) and 0.03 (s) correspond to high-rate and low-rate UDP DDoS flooding attacks, respectively. -Article
+
+Let's break this down:
 
 ---
 
-## 🔍 Summary of Observations
+## Summary of Observations
 
 ### 1. **Dataset Size & Features**
 
 * **Samples**: 4,950,080
-* **Initial features**: 64
+* **Initial features**: 64 (after feature dropped as mentioned previously)
 * **Final features** after cleaning:
 
   * Removed **9 constant** features
@@ -315,20 +341,20 @@ The results show a **near-perfect classification performance** across all evalua
 
 ### 2. **Feature Selection Techniques**
 
-#### ✅ **Variance Threshold (VT)**:
+#### **Variance Threshold (VT)**:
 
 * Selected **6 features**
 * Quick and unsupervised
 * Features:
   `['Bwd IAT Min', 'Bwd PSH Flags', 'Pkt Len Std', 'Pkt Len Var', 'FIN Flag Cnt', 'Subflow Fwd Pkts']`
 
-#### ✅ **Dynamic Feature Analysis (DFA)**:
+#### **Dynamic Feature Analysis (DFA)**:
 
 * Selected **4 features**
   `['Bwd IAT Min', 'Bwd PSH Flags', 'Pkt Len Std', 'Subflow Fwd Pkts']`
 * Overlaps with VT, suggesting robustness
 
-#### ✅ **DFA Aggregated Feature**:
+#### **DFA Aggregated Feature**:
 
 * A composite single feature likely combining most discriminative traits
 
@@ -359,12 +385,14 @@ The results show a **near-perfect classification performance** across all evalua
 
 * **Silhouette Score** of **0.6027** for the aggregated feature suggests:
 
+![image](https://github.com/user-attachments/assets/203a3dc3-915e-4779-993f-901e4831ded2)
+
   * **Moderate separation** between clusters (i.e., classes)
   * The feature is capturing meaningful signal
 
 ---
 
-## ⚠️ Critical Concerns
+## Critical Concerns
 
 Despite these perfect results, there are **red flags** that suggest the model might be **overfitting to dataset artifacts**:
 
@@ -386,27 +414,19 @@ Despite these perfect results, there are **red flags** that suggest the model mi
 
 ---
 
-## ✅ Recommendations
+## Recommendations
 
-1. **Investigate Class Imbalance Beyond Label Count**
-
-   * Check the **protocol distribution** after cleaning. If DDoS = TCP-only and normal = diverse, the model is detecting protocol, not DDoS behavior.
-
-2. **Rebuild Dataset with Correct Labeling**
+1. **Rebuild Dataset with Correct Labeling**
 
    * Consider fixing the mislabeled samples or filtering out TCP-only bias.
 
-3. **Introduce Adversarial Noise or Validate on External Data**
-
-   * Try testing your model on a different dataset (e.g., CIC-IDS, UNSW-NB15) to confirm generalization.
-
-4. **Avoid Publishing Results Based on Current Data**
+2. **Avoid Publishing Results Based on Current Data**
 
    * These results do not reflect real-world performance and could be misleading.
 
 ---
 
-## ✅ Final Verdict
+## Final Verdict
 
 Fixing the data should be **priority #1** before trusting or deploying these models.
 
